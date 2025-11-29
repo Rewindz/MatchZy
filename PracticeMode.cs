@@ -671,7 +671,7 @@ namespace MatchZy
                                     }
 
                                     // Extract description, if available
-                                    string lineupDesc = lineupInfo.ContainsKey("Desc") ? lineupInfo["Desc"] : null;
+                                    string? lineupDesc = lineupInfo.ContainsKey("Desc") ? lineupInfo["Desc"] : null;
 
                                     // Print messages
                                     // ReplyToUserCommand(player, $"Lineup {ChatColors.Green}{nearestName}{ChatColors.Default} loaded successfully!");
@@ -786,12 +786,6 @@ namespace MatchZy
                 ReplyToUserCommand(player, Localizer["matchzy.pm.pracmatchstarted"]);
                 return;
             }
-	    
-			// if (isPractice)
-            // {
-            //     StartMatchMode();
-            //     return;
-            // }
 	
             StartPracticeMode();
         }
@@ -828,6 +822,7 @@ namespace MatchZy
         }
 
         [ConsoleCommand("css_spawn", "Teleport to provided spawn")]
+        [ConsoleCommand("css_sp", "Teleport to provided spawn")]
         public void OnSpawnCommand(CCSPlayerController? player, CommandInfo command)
         {
             if (!isPractice) return;
@@ -1142,6 +1137,7 @@ namespace MatchZy
         }
 
         [ConsoleCommand("css_ff", "Fast forwards the timescale to 20 seconds")]
+        [ConsoleCommand("css_fastforward", "Fast forwards the timescale to 20 seconds")]
         public void OnFFCommand(CCSPlayerController? player, CommandInfo? command)
         {
             if (!isPractice || player == null) return;
@@ -1160,12 +1156,6 @@ namespace MatchZy
                 ResetFastForward(preFastForwardMoveTypes);
             });
 
-        }
-
-        [ConsoleCommand("css_fastforward", "Fast forwards the timescale to 20 seconds")]
-        public void OnFastForwardCommand(CCSPlayerController? player, CommandInfo? command)
-        {
-            OnFFCommand(player, command);
         }
 
         public void ResetFastForward(Dictionary<int, MoveType_t> preFastForwardMoveTypes) {

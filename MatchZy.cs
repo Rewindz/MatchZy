@@ -164,8 +164,8 @@ namespace MatchZy
                 { ".traj", OnTrajCommand },
                 { ".pip", OnTrajCommand },
                 { ".god", OnGodCommand },
-                { ".ff", OnFastForwardCommand },
-                { ".fastforward", OnFastForwardCommand },
+                { ".ff", OnFFCommand },
+                { ".fastforward", OnFFCommand },
                 { ".clear", OnClearCommand },
                 { ".match", OnMatchCommand },
                 { ".uncoach", OnUnCoachCommand },
@@ -450,7 +450,7 @@ namespace MatchZy
                 {
                     HandleLoadNadeCommand(player, messageCommandArg);
                 }
-                if (message.StartsWith(".spawn"))
+                if (message.StartsWith(".spawn") || message.StartsWith(".sp"))
                 {
                     HandleSpawnCommand(player, messageCommandArg, player.TeamNum, "spawn");
                 }

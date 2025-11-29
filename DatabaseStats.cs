@@ -18,7 +18,7 @@ namespace MatchZy
 {
     public class Database
     {
-        private IDbConnection connection;
+        private IDbConnection? connection;
 
         DatabaseConfig? config;
         public DatabaseType databaseType { get; set; }
@@ -28,6 +28,9 @@ namespace MatchZy
             ConnectDatabase(directory);
             try
             {
+                if(connection is null)
+                    throw new Exception("Connection is NULL!");
+
                 connection.Open();
                 string dbType = (connection is SqliteConnection) ? "SQLite" : "MySQL";
                 Log($"[InitializeDatabase] {dbType} Database connection successful");
@@ -82,157 +85,183 @@ namespace MatchZy
 
         public void CreateRequiredTablesSQLite()
         {
-            connection.Execute($@"
-            CREATE TABLE IF NOT EXISTS matchzy_stats_matches (
-                matchid INTEGER PRIMARY KEY AUTOINCREMENT,
-                start_time DATETIME NOT NULL,
-                end_time DATETIME DEFAULT NULL,
-                winner TEXT NOT NULL DEFAULT '',
-                series_type TEXT NOT NULL DEFAULT '',
-                team1_name TEXT NOT NULL DEFAULT '',
-                team1_score INTEGER NOT NULL DEFAULT 0,
-                team2_name TEXT NOT NULL DEFAULT '',
-                team2_score INTEGER NOT NULL DEFAULT 0,
-                server_ip TEXT NOT NULL DEFAULT '0'
-            )");
+            try
+            {
+                if(connection is null)
+                throw new Exception("Connection is NULL!");
 
-            connection.Execute(@"
-                CREATE TABLE IF NOT EXISTS matchzy_stats_maps (
-                    matchid INTEGER NOT NULL,
-                    mapnumber INTEGER NOT NULL,
+                connection.Execute($@"
+                CREATE TABLE IF NOT EXISTS matchzy_stats_matches (
+                    matchid INTEGER PRIMARY KEY AUTOINCREMENT,
                     start_time DATETIME NOT NULL,
                     end_time DATETIME DEFAULT NULL,
                     winner TEXT NOT NULL DEFAULT '',
-                    mapname TEXT NOT NULL DEFAULT '',
+                    series_type TEXT NOT NULL DEFAULT '',
+                    team1_name TEXT NOT NULL DEFAULT '',
                     team1_score INTEGER NOT NULL DEFAULT 0,
+                    team2_name TEXT NOT NULL DEFAULT '',
                     team2_score INTEGER NOT NULL DEFAULT 0,
-                    PRIMARY KEY (matchid, mapnumber),
-                    FOREIGN KEY (matchid) REFERENCES matchzy_stats_matches (matchid)
+                    server_ip TEXT NOT NULL DEFAULT '0'
                 )");
 
-            connection.Execute(@"
-                CREATE TABLE IF NOT EXISTS matchzy_stats_players (
-                    matchid INTEGER NOT NULL,
-                    mapnumber INTEGER NOT NULL,
-                    steamid64 INTEGER NOT NULL,
-                    team TEXT NOT NULL DEFAULT '',
-                    name TEXT NOT NULL,
-                    kills INTEGER NOT NULL,
-                    deaths INTEGER NOT NULL,
-                    damage INTEGER NOT NULL,
-                    assists INTEGER NOT NULL,
-                    enemy5ks INTEGER NOT NULL,
-                    enemy4ks INTEGER NOT NULL,
-                    enemy3ks INTEGER NOT NULL,
-                    enemy2ks INTEGER NOT NULL,
-                    utility_count INTEGER NOT NULL,
-                    utility_damage INTEGER NOT NULL,
-                    utility_successes INTEGER NOT NULL,
-                    utility_enemies INTEGER NOT NULL,
-                    flash_count INTEGER NOT NULL,
-                    flash_successes INTEGER NOT NULL,
-                    health_points_removed_total INTEGER NOT NULL,
-                    health_points_dealt_total INTEGER NOT NULL,
-                    shots_fired_total INTEGER NOT NULL,
-                    shots_on_target_total INTEGER NOT NULL,
-                    v1_count INTEGER NOT NULL,
-                    v1_wins INTEGER NOT NULL,
-                    v2_count INTEGER NOT NULL,
-                    v2_wins INTEGER NOT NULL,
-                    entry_count INTEGER NOT NULL,
-                    entry_wins INTEGER NOT NULL,
-                    equipment_value INTEGER NOT NULL,
-                    money_saved INTEGER NOT NULL,
-                    kill_reward INTEGER NOT NULL,
-                    live_time INTEGER NOT NULL,
-                    head_shot_kills INTEGER NOT NULL,
-                    cash_earned INTEGER NOT NULL,
-                    enemies_flashed INTEGER NOT NULL,
-                    PRIMARY KEY (matchid, mapnumber, steamid64),
-                    FOREIGN KEY (matchid) REFERENCES matchzy_stats_matches (matchid),
-                    FOREIGN KEY (matchid, mapnumber) REFERENCES matchzy_stats_maps (matchid, mapnumber)
-                )");
+                connection.Execute(@"
+                    CREATE TABLE IF NOT EXISTS matchzy_stats_maps (
+                        matchid INTEGER NOT NULL,
+                        mapnumber INTEGER NOT NULL,
+                        start_time DATETIME NOT NULL,
+                        end_time DATETIME DEFAULT NULL,
+                        winner TEXT NOT NULL DEFAULT '',
+                        mapname TEXT NOT NULL DEFAULT '',
+                        team1_score INTEGER NOT NULL DEFAULT 0,
+                        team2_score INTEGER NOT NULL DEFAULT 0,
+                        PRIMARY KEY (matchid, mapnumber),
+                        FOREIGN KEY (matchid) REFERENCES matchzy_stats_matches (matchid)
+                    )");
+
+                connection.Execute(@"
+                    CREATE TABLE IF NOT EXISTS matchzy_stats_players (
+                        matchid INTEGER NOT NULL,
+                        mapnumber INTEGER NOT NULL,
+                        steamid64 INTEGER NOT NULL,
+                        team TEXT NOT NULL DEFAULT '',
+                        name TEXT NOT NULL,
+                        kills INTEGER NOT NULL,
+                        deaths INTEGER NOT NULL,
+                        damage INTEGER NOT NULL,
+                        assists INTEGER NOT NULL,
+                        enemy5ks INTEGER NOT NULL,
+                        enemy4ks INTEGER NOT NULL,
+                        enemy3ks INTEGER NOT NULL,
+                        enemy2ks INTEGER NOT NULL,
+                        utility_count INTEGER NOT NULL,
+                        utility_damage INTEGER NOT NULL,
+                        utility_successes INTEGER NOT NULL,
+                        utility_enemies INTEGER NOT NULL,
+                        flash_count INTEGER NOT NULL,
+                        flash_successes INTEGER NOT NULL,
+                        health_points_removed_total INTEGER NOT NULL,
+                        health_points_dealt_total INTEGER NOT NULL,
+                        shots_fired_total INTEGER NOT NULL,
+                        shots_on_target_total INTEGER NOT NULL,
+                        v1_count INTEGER NOT NULL,
+                        v1_wins INTEGER NOT NULL,
+                        v2_count INTEGER NOT NULL,
+                        v2_wins INTEGER NOT NULL,
+                        entry_count INTEGER NOT NULL,
+                        entry_wins INTEGER NOT NULL,
+                        equipment_value INTEGER NOT NULL,
+                        money_saved INTEGER NOT NULL,
+                        kill_reward INTEGER NOT NULL,
+                        live_time INTEGER NOT NULL,
+                        head_shot_kills INTEGER NOT NULL,
+                        cash_earned INTEGER NOT NULL,
+                        enemies_flashed INTEGER NOT NULL,
+                        PRIMARY KEY (matchid, mapnumber, steamid64),
+                        FOREIGN KEY (matchid) REFERENCES matchzy_stats_matches (matchid),
+                        FOREIGN KEY (matchid, mapnumber) REFERENCES matchzy_stats_maps (matchid, mapnumber)
+                    )");
+            }
+            catch (Exception ex)
+            {
+                Log($"[CreateRequiredTablesSQLite - FATAL] Error creating required tables!: {ex.Message}");
+                return;
+            }
+            
         }
 
         public void CreateRequiredTablesSQL()
         {
-            connection.Execute($@"
-                CREATE TABLE IF NOT EXISTS matchzy_stats_matches (
-                    matchid INT PRIMARY KEY AUTO_INCREMENT,
+            try
+            {
+                if(connection is null)
+                    throw new Exception("Connection is NULL!");
+
+                connection.Execute($@"
+                    CREATE TABLE IF NOT EXISTS matchzy_stats_matches (
+                        matchid INT PRIMARY KEY AUTO_INCREMENT,
+                        start_time DATETIME NOT NULL,
+                        end_time DATETIME DEFAULT NULL,
+                        winner VARCHAR(255) NOT NULL DEFAULT '',
+                        series_type VARCHAR(255) NOT NULL DEFAULT '',
+                        team1_name VARCHAR(255) NOT NULL DEFAULT '',
+                        team1_score INT NOT NULL DEFAULT 0,
+                        team2_name VARCHAR(255) NOT NULL DEFAULT '',
+                        team2_score INT NOT NULL DEFAULT 0,
+                        server_ip VARCHAR(255) NOT NULL DEFAULT '0'
+                    )");
+                    
+                connection.Execute($@"
+                CREATE TABLE IF NOT EXISTS matchzy_stats_maps (
+                    matchid INT NOT NULL,
+                    mapnumber TINYINT(3) UNSIGNED NOT NULL,
                     start_time DATETIME NOT NULL,
                     end_time DATETIME DEFAULT NULL,
-                    winner VARCHAR(255) NOT NULL DEFAULT '',
-                    series_type VARCHAR(255) NOT NULL DEFAULT '',
-                    team1_name VARCHAR(255) NOT NULL DEFAULT '',
+                    winner VARCHAR(16) NOT NULL DEFAULT '',
+                    mapname VARCHAR(64) NOT NULL DEFAULT '',
                     team1_score INT NOT NULL DEFAULT 0,
-                    team2_name VARCHAR(255) NOT NULL DEFAULT '',
                     team2_score INT NOT NULL DEFAULT 0,
-                    server_ip VARCHAR(255) NOT NULL DEFAULT '0'
+                    PRIMARY KEY (matchid, mapnumber),
+                    INDEX mapnumber_index (mapnumber),
+                    CONSTRAINT matchzy_stats_maps_matchid FOREIGN KEY (matchid) REFERENCES matchzy_stats_matches (matchid)
                 )");
-                
-            connection.Execute($@"
-            CREATE TABLE IF NOT EXISTS matchzy_stats_maps (
-                matchid INT NOT NULL,
-                mapnumber TINYINT(3) UNSIGNED NOT NULL,
-                start_time DATETIME NOT NULL,
-                end_time DATETIME DEFAULT NULL,
-                winner VARCHAR(16) NOT NULL DEFAULT '',
-                mapname VARCHAR(64) NOT NULL DEFAULT '',
-                team1_score INT NOT NULL DEFAULT 0,
-                team2_score INT NOT NULL DEFAULT 0,
-                PRIMARY KEY (matchid, mapnumber),
-                INDEX mapnumber_index (mapnumber),
-                CONSTRAINT matchzy_stats_maps_matchid FOREIGN KEY (matchid) REFERENCES matchzy_stats_matches (matchid)
-            )");
 
-            connection.Execute($@"
-            CREATE TABLE IF NOT EXISTS matchzy_stats_players (
-                matchid INT NOT NULL,
-                mapnumber TINYINT(3) UNSIGNED NOT NULL,
-                steamid64 BIGINT NOT NULL,
-                team VARCHAR(255) NOT NULL DEFAULT '',
-                name VARCHAR(255) NOT NULL,
-                kills INT NOT NULL,
-                deaths INT NOT NULL,
-                damage INT NOT NULL,
-                assists INT NOT NULL,
-                enemy5ks INT NOT NULL,
-                enemy4ks INT NOT NULL,
-                enemy3ks INT NOT NULL,
-                enemy2ks INT NOT NULL,
-                utility_count INT NOT NULL,
-                utility_damage INT NOT NULL,
-                utility_successes INT NOT NULL,
-                utility_enemies INT NOT NULL,
-                flash_count INT NOT NULL,
-                flash_successes INT NOT NULL,
-                health_points_removed_total INT NOT NULL,
-                health_points_dealt_total INT NOT NULL,
-                shots_fired_total INT NOT NULL,
-                shots_on_target_total INT NOT NULL,
-                v1_count INT NOT NULL,
-                v1_wins INT NOT NULL,
-                v2_count INT NOT NULL,
-                v2_wins INT NOT NULL,
-                entry_count INT NOT NULL,
-                entry_wins INT NOT NULL,
-                equipment_value INT NOT NULL,
-                money_saved INT NOT NULL,
-                kill_reward INT NOT NULL,
-                live_time INT NOT NULL,
-                head_shot_kills INT NOT NULL,
-                cash_earned INT NOT NULL,
-                enemies_flashed INT NOT NULL,
-                PRIMARY KEY (matchid, mapnumber, steamid64),
-                CONSTRAINT fk_player_map_ref FOREIGN KEY (matchid, mapnumber) 
-                    REFERENCES matchzy_stats_maps (matchid, mapnumber)
-            )");
+                connection.Execute($@"
+                CREATE TABLE IF NOT EXISTS matchzy_stats_players (
+                    matchid INT NOT NULL,
+                    mapnumber TINYINT(3) UNSIGNED NOT NULL,
+                    steamid64 BIGINT NOT NULL,
+                    team VARCHAR(255) NOT NULL DEFAULT '',
+                    name VARCHAR(255) NOT NULL,
+                    kills INT NOT NULL,
+                    deaths INT NOT NULL,
+                    damage INT NOT NULL,
+                    assists INT NOT NULL,
+                    enemy5ks INT NOT NULL,
+                    enemy4ks INT NOT NULL,
+                    enemy3ks INT NOT NULL,
+                    enemy2ks INT NOT NULL,
+                    utility_count INT NOT NULL,
+                    utility_damage INT NOT NULL,
+                    utility_successes INT NOT NULL,
+                    utility_enemies INT NOT NULL,
+                    flash_count INT NOT NULL,
+                    flash_successes INT NOT NULL,
+                    health_points_removed_total INT NOT NULL,
+                    health_points_dealt_total INT NOT NULL,
+                    shots_fired_total INT NOT NULL,
+                    shots_on_target_total INT NOT NULL,
+                    v1_count INT NOT NULL,
+                    v1_wins INT NOT NULL,
+                    v2_count INT NOT NULL,
+                    v2_wins INT NOT NULL,
+                    entry_count INT NOT NULL,
+                    entry_wins INT NOT NULL,
+                    equipment_value INT NOT NULL,
+                    money_saved INT NOT NULL,
+                    kill_reward INT NOT NULL,
+                    live_time INT NOT NULL,
+                    head_shot_kills INT NOT NULL,
+                    cash_earned INT NOT NULL,
+                    enemies_flashed INT NOT NULL,
+                    PRIMARY KEY (matchid, mapnumber, steamid64),
+                    CONSTRAINT fk_player_map_ref FOREIGN KEY (matchid, mapnumber) 
+                        REFERENCES matchzy_stats_maps (matchid, mapnumber)
+                )");
+            }
+            catch (Exception ex)
+            {
+                Log($"[CreateRequiredTablesSQL - FATAL] Error creating required tables!: {ex.Message}");
+                return;
+            }
         }
 
         public long InitMatch(string team1name, string team2name, string serverIp, bool isMatchSetup, long liveMatchId, int mapNumber, string seriesType, MatchConfig matchConfig)
         {
             try
             {
+                if(connection is null)
+                    throw new Exception("Connection is NULL!");
+
                 string mapName = isMatchSetup ? matchConfig.Maplist[mapNumber] : Server.MapName;
                 string dateTimeExpression = (connection is SqliteConnection) ? "datetime('now')" : "NOW()";
 
@@ -287,6 +316,8 @@ namespace MatchZy
         public void UpdateTeamData(int matchId, string team1name, string team2name) {
             try
             {
+                if(connection is null)
+                    throw new Exception("Connection is NULL!");
                 connection.Execute(@"
                     UPDATE matchzy_stats_matches
                     SET team1_name = @team1name, team2_name = @team2name
@@ -305,6 +336,9 @@ namespace MatchZy
         {
             try
             {
+                if(connection is null)
+                    throw new Exception("Connection is NULL!");
+
                 string dateTimeExpression = (connection is SqliteConnection) ? "datetime('now')" : "NOW()";
 
                 string sqlQuery = $@"
@@ -333,6 +367,8 @@ namespace MatchZy
         {
             try
             {
+                if(connection is null)
+                    throw new Exception("Connection is NULL!");
                 string dateTimeExpression = (connection is SqliteConnection) ? "datetime('now')" : "NOW()";
 
                 string sqlQuery = $@"
@@ -354,6 +390,9 @@ namespace MatchZy
         {
             try
             {
+                if(connection is null)
+                    throw new Exception("Connection is NULL!");
+
                 string sqlQuery = $@"
                     UPDATE matchzy_stats_maps
                     SET team1_score = @t1score, team2_score = @t2score
@@ -371,6 +410,9 @@ namespace MatchZy
         {
             try
             {
+                if(connection is null)
+                    throw new Exception("Connection is NULL!");
+
                 foreach (ulong steamid64 in playerStatsDictionary.Keys)
                 {
                     Log($"[UpdatePlayerStats] Going to update data for Match: {matchId}, MapNumber: {mapNumber}, Player: {steamid64}");
@@ -482,6 +524,9 @@ namespace MatchZy
         public async Task WritePlayerStatsToCsv(string filePath, long matchId, int mapNumber)
         {
             try {
+                if(connection is null)
+                    throw new Exception("Connection is NULL!");
+
                 string csvFilePath = $"{filePath}/match_data_map{mapNumber}_{matchId}.csv";
                 string? directoryPath = Path.GetDirectoryName(csvFilePath);
                 if (directoryPath != null)

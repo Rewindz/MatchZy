@@ -205,9 +205,11 @@ public partial class MatchZy
         if (!IsPlayerValid(target)) return; // should never trigger
 
         // transfer bomb
-        Log($"[EventPlayerGivenC4 INFO] Transferred bomb from {coach.PlayerName} (Coach) to {target.PlayerName}.");
+        
+        var playerName = target is null ? "Invalid Player" : target.PlayerName;
+        Log($"[EventPlayerGivenC4 INFO] Transferred bomb from {coach.PlayerName} (Coach) to {playerName}.");
         bomb.Value!.Remove();
-        target.GiveNamedItem("weapon_c4");
+        if(target is not null) target.GiveNamedItem("weapon_c4");
     }
 
     public CsTeam GetCoachTeam(CCSPlayerController coach)
